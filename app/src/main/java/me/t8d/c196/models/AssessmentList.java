@@ -30,4 +30,15 @@ public class AssessmentList implements Serializable {
     public int hashCode() {
         return Objects.hash(assessmentList);
     }
+
+    public AssessmentList GetUpcomingAssessments() {
+        ArrayList<Assessment> upcomingAssessments = new ArrayList<>();
+        for (Assessment assessment : assessmentList) {
+            // if assessment is within 7 days, add to list
+            if (assessment.GetEndDate().getTime() - System.currentTimeMillis() <= 604800000) {
+                upcomingAssessments.add(assessment);
+            }
+        }
+        return new AssessmentList(upcomingAssessments);
+    }
 }

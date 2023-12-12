@@ -22,9 +22,6 @@ import me.t8d.c196.repository.DataManager;
  */
 public class AssessmentFragment extends Fragment implements AssessmentAdapter.AssessmentAdapterCallback {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-
     private RecyclerView recyclerView;
     private AssessmentAdapter adapter;
     private AssessmentList assessmentList;
@@ -46,6 +43,7 @@ public class AssessmentFragment extends Fragment implements AssessmentAdapter.As
 
     private void openAddEditFragment(boolean isEditMode, int itemId) {
         AssessmentAddEditFragment addEditFragment = new AssessmentAddEditFragment();
+        addEditFragment.setOnAssessmentUpdatedListener(adapter);
         Bundle args = new Bundle();
         args.putBoolean("isEditMode", isEditMode);
         if (isEditMode) {

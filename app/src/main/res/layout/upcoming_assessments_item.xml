@@ -8,9 +8,10 @@
     android:background="@drawable/item_border">
 
     <TextView
-        android:id="@+id/courseTitle"
+        android:id="@+id/upcoming_assessments_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Course Title" />
+
+        android:text="Upcoming Assessments" />
     <!-- Add more views as needed -->
 </LinearLayout>

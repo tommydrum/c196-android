@@ -10,10 +10,43 @@ import java.util.Objects;
 public class Course implements Serializable {
     private static final long serialVersionUID = 1L;
     private String title;
-    private ArrayList<Pair<String, Boolean>> notes = new ArrayList<>(); //Note, Optional?
+    private String notes;
     private Date startDate;
     private Date endDate;
     private AssessmentList assessmentList;
+
+    private int notificationId = 0;
+    public int GetNotificationId() {
+        return this.notificationId;
+    }
+    public void SetNotificationId(int notificationId) {
+        this.notificationId = notificationId;
+    }
+
+    public void SetNotes(String courseNote) {
+        this.notes = courseNote;
+    }
+
+    public void SetStatus(Status selectedStatus) {
+        this.status = selectedStatus;
+    }
+
+    public void SetTitle(String courseTitle) {
+        this.title = courseTitle;
+    }
+
+    public void SetStartDate(Date parse) {
+        this.startDate = parse;
+    }
+
+    public void SetEndDate(Date parse) {
+        this.endDate = parse;
+    }
+
+    public void SetAssessmentList(AssessmentList assessmentList) {
+        this.assessmentList = assessmentList;
+    }
+
     public enum Status {
         IN_PROGRESS, COMPLETED, DROPPED, PLANNED
     };
@@ -71,22 +104,13 @@ public class Course implements Serializable {
         }
     };
     private Instructor instructor;
-    public Course(String title, Date startDate, Date endDate, Status status, Instructor instructor, String notes, AssessmentList list) {
+    public Course(String title, Date startDate, Date endDate, Status status, String notes, AssessmentList list, String fName, String lName, String phone, String email) {
         this.title = title;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
-        this.instructor = instructor;
-        this.notes.add(new Pair<>(notes, true)); //requires one note for creation, the true marks it as required (non-optional)
-        this.assessmentList = list;
-    }
-    public Course(String title, Date startDate, Date endDate, Status status, Instructor instructor, ArrayList<Pair<String, Boolean>> notes, AssessmentList list) {
-        this.title = title;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.status = status;
-        this.instructor = instructor;
-        this.notes = notes;
+        this.instructor = new Instructor(fName, lName, phone, email);
+        this.notes = notes; //requires one note for creation, the true marks it as required (non-optional)
         this.assessmentList = list;
     }
     public void addAssessment(Assessment assessment) {
@@ -113,7 +137,7 @@ public class Course implements Serializable {
     public Instructor GetInstructor() {
         return this.instructor;
     }
-    public ArrayList<Pair<String, Boolean>> GetNotes() {
+    public String GetNotes() {
         return notes;
     }
     @Override

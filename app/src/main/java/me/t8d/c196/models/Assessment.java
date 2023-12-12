@@ -7,17 +7,31 @@ import java.util.Objects;
 
 public class Assessment implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    public Date GetStartDate() {
+        return this.startDate;
+    }
+
     public enum Type {
         Performance,
         Objective
     }
+    private int notificationId = 0;
+    public int GetNotificationId() {
+        return this.notificationId;
+    }
+    public void SetNotificationId(int notificationId) {
+        this.notificationId = notificationId;
+    }
     private Type type;
     private String title;
     private Date endDate;
-    public Assessment(Type type, String title, Date endDate) {
+    private Date startDate;
+    public Assessment(Type type, String title, Date endDate, Date startDate) {
         this.type = type;
         this.title = title;
         this.endDate = endDate;
+        this.startDate = startDate;
     }
     public Type GetTypeEnum() {
         return this.type;

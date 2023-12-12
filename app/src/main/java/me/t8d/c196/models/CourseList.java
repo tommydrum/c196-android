@@ -31,4 +31,14 @@ public class CourseList implements Serializable {
     public int hashCode() {
         return Objects.hash(courseList);
     }
+
+    public CourseList GetCurrentCourses() {
+        ArrayList<Course> currentCourses = new ArrayList<>();
+        for (Course course : courseList) {
+            if (course.GetStatus() == Course.Status.IN_PROGRESS) {
+                currentCourses.add(course);
+            }
+        }
+        return new CourseList(currentCourses);
+    }
 }

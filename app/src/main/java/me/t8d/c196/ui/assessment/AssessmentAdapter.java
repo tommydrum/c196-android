@@ -10,8 +10,36 @@ import java.util.List;
 import me.t8d.c196.R;
 import me.t8d.c196.models.Assessment;
 import me.t8d.c196.models.AssessmentList;
+import me.t8d.c196.repository.DataManager;
 
-public class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.ViewHolder> {
+public class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.ViewHolder> implements AssessmentAddEditFragment.OnAssessmentUpdatedListener {
+    @Override
+    public void onAssessmentUpdated(int position, Assessment updatedAssessment) {
+        if (position != -1) {
+            assessmentList.GetAssessmentList().set(position, updatedAssessment);
+            notifyItemChanged(position);
+        } else {
+            assessmentList.addAssessment(updatedAssessment);
+            notifyDataSetChanged();
+        }
+        DataManager dataManager = new DataManager();
+        dataManager.saveAllData();
+    }
+
+    @Override
+    public void onAssessmentDeleted(int position, Assessment assessment) {
+        assessmentList.removeAssessment(assessment);
+        //Delete any associated assessments found within Courses
+        DataManager dm = new DataManager();
+        dm.GetCourseList().GetCourseList().forEach(course -> {
+            AssessmentList tmp = course.GetAssessmentList();
+            if (tmp != null)
+                tmp.removeAssessment(assessment); //If assessment is not found, it does nothing
+        });
+        dm.saveAllData();
+        notifyItemRemoved(position);
+    }
+
     public interface AssessmentAdapterCallback {
         void onAssessmentSelected(int itemId);
     }
@@ -36,8 +64,7 @@ public class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.Vi
         holder.assessmentTitle.setText(assessment.GetTitle());
         holder.itemView.setOnClickListener(v -> {
             if (callback != null) {
-                int itemId = (int) getItemId(position);
-                callback.onAssessmentSelected(itemId);
+                callback.onAssessmentSelected(position);
             }
         });
         // Set other assessment details in the view holder

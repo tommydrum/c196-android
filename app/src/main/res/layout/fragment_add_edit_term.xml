@@ -10,10 +10,10 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:padding="16dp">
         <TextView
-            android:id="@+id/headerAssessmentTitle"
+            android:id="@+id/headerTermTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add/Edit Assessment"
+            android:text="Add/Edit Term"
             android:textSize="20sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -21,135 +21,114 @@
             android:layout_marginEnd="8dp"/>
 
         <TextView
-            android:id="@+id/assessmentTitle"
+            android:id="@+id/termTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Assessment Title"
+            android:text="Term Title"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/headerAssessmentTitle" />
+            app:layout_constraintTop_toBottomOf="@id/headerTermTitle" />
 
         <EditText
-            android:id="@+id/editTextAssessmentTitle"
+            android:id="@+id/editTextTermTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Title"
             android:inputType="text"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/assessmentTitle"
-            android:autofillHints="" />
+            app:layout_constraintTop_toBottomOf="@+id/termTitle" />
 
         <TextView
-            android:id="@+id/assessmentTypeText"
+            android:id="@+id/termStartDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Assessment Type"
+            android:text="Term Date"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editTextAssessmentTitle" />
-
-        <RadioGroup
-            android:id="@+id/assessmentType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/assessmentTypeText">
-
-            <RadioButton
-                android:id="@+id/radioButtonPerformance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Performance"
-                android:checked="true"/>
-
-            <RadioButton
-                android:id="@+id/radioButtonObjective"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Objective" />
-        </RadioGroup>
-
-        <TextView
-            android:id="@+id/assessmentStartDateText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Assessment Start Date"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/assessmentType" />
+            app:layout_constraintTop_toBottomOf="@+id/editTextTermTitle" />
 
         <EditText
-            android:id="@+id/editAssessmentStartDate"
+            android:id="@+id/editTermStartDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="false"
-            android:hint="Start Date"
+            android:hint="Date"
             android:inputType="date"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/assessmentStartDateText"
+            app:layout_constraintTop_toBottomOf="@+id/termStartDate"
             android:autofillHints="" />
 
         <TextView
-            android:id="@+id/assessmentEndDateText"
+            android:id="@+id/termEndDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Assessment End Date"
+            android:text="Term Date"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editAssessmentStartDate" />
+            app:layout_constraintTop_toBottomOf="@+id/editTermStartDate" />
 
         <EditText
-            android:id="@+id/editAssessmentEndDate"
+            android:id="@+id/editTermEndDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="false"
-            android:hint="End Date"
+            android:hint="Date"
             android:inputType="date"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/assessmentEndDateText"
+            app:layout_constraintTop_toBottomOf="@+id/termEndDate"
             android:autofillHints="" />
-
 
         <LinearLayout
-            android:id="@+id/assessmentButtonRow"
+            android:id="@+id/termButtonRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editAssessmentEndDate">
+            app:layout_constraintTop_toBottomOf="@+id/editTermEndDate">
 
             <Button
-                android:id="@+id/cancelAssessmentButton"
+                android:id="@+id/cancelTermButton"
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
+                android:textSize="11sp"
                 android:text="Cancel" />
 
             <Button
-                android:id="@+id/deleteAssessmentButton"
+                android:id="@+id/coursesButton"
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
+                android:textSize="11sp"
+                android:text="Courses" />
+
+            <Button
+                android:id="@+id/deleteTermButton"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:textSize="11sp"
                 android:text="Delete" />
 
             <Button
-                android:id="@+id/saveAssessmentButton"
+                android:id="@+id/saveTermButton"
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
+                android:textSize="11sp"
                 android:text="Save" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
