@@ -65,6 +65,10 @@ public class AssessmentAddEditFragment extends DialogFragment {
         saveButton.setOnClickListener(v -> save());
         Button deleteButton = view.findViewById(R.id.deleteAssessmentButton);
         deleteButton.setOnClickListener(v -> delete());
+        Button scheduleStartNotificationButton = view.findViewById(R.id.startNotificationButton);
+        scheduleStartNotificationButton.setOnClickListener(v -> scheduleStartNotification());
+        Button scheduleEndNotificationButton = view.findViewById(R.id.endNotificationButton);
+        scheduleEndNotificationButton.setOnClickListener(v -> scheduleEndNotification());
 
         builder.setView(view);
         return builder.create();
@@ -126,6 +130,15 @@ public class AssessmentAddEditFragment extends DialogFragment {
                 // cancel the old notification
                 cancelNotification(currentAssessment.GetNotificationId());
                 cancelNotification(currentAssessment.GetNotificationId() + 1);
+                // schedule the new notification if date is in the future
+                if (currentAssessment.GetStartNotification()) {
+                    newAssessment.SetStartNotification(true);
+                    scheduleInexactAlarm(startDateObj, "Assessment " + newAssessment.GetTitle() + " is starting today!", newAssessment.GetNotificationId());
+                }
+                if (currentAssessment.GetEndNotification()) {
+                    newAssessment.SetEndNotification(true);
+                    scheduleInexactAlarm(endDateObj, "Assessment " + newAssessment.GetTitle() + " is ending today!", newAssessment.GetNotificationId() + 1);
+                }
                 updateListener.onAssessmentUpdated(itemId, newAssessment);
             }
             else {
@@ -139,11 +152,7 @@ public class AssessmentAddEditFragment extends DialogFragment {
                 newAssessment.SetNotificationId(id + 2);
                 updateListener.onAssessmentUpdated(-1, newAssessment);
             }
-            // schedule the new notification if date is in the future
-            if (startDateObj.after(Calendar.getInstance().getTime()))
-                scheduleInexactAlarm(startDateObj, "Assessment " + newAssessment.GetTitle() + " is starting today!", newAssessment.GetNotificationId());
-            if (endDateObj.after(Calendar.getInstance().getTime()))
-                scheduleInexactAlarm(endDateObj, "Assessment " + newAssessment.GetTitle() + " is ending today!", newAssessment.GetNotificationId() + 1);
+
         }
         dismiss();
     }
@@ -155,7 +164,70 @@ public class AssessmentAddEditFragment extends DialogFragment {
         }
         dismiss();
     }
-
+    public void scheduleStartNotification() {
+        Dialog dialog = getDialog();
+        EditText startDate = dialog.findViewById(R.id.editAssessmentStartDate);
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+        Date startDateObj = null;
+        try {
+            startDateObj = formatter.parse(startDate.getText().toString());
+            startDate.setError(null);
+        } catch (ParseException e) {
+            //Validation Error
+            startDate.setError("Required");
+            return;
+        }
+        // if isEditMode and start date is before today, and start notification is set, cancel the notification
+        if (currentAssessment.GetStartNotification() ) {
+            cancelNotification(currentAssessment.GetNotificationId());
+            // Set button text to "Schedule Start Notification"
+            Button scheduleStartNotificationButton = dialog.findViewById(R.id.startNotificationButton);
+            scheduleStartNotificationButton.setText("Schedule Start Notification");
+            currentAssessment.SetStartNotification(false);
+        }
+        else if (startDateObj != null) {
+            scheduleInexactAlarm(startDateObj, "Assessment " + currentAssessment.GetTitle() + " is starting today!", currentAssessment.GetNotificationId());
+            int itemId = getArguments() != null ? getArguments().getInt("itemId", 0) : 0;
+            // Set button text to "Cancel Start Notification"
+            Button scheduleStartNotificationButton = dialog.findViewById(R.id.startNotificationButton);
+            scheduleStartNotificationButton.setText("Cancel Start Notification");
+            currentAssessment.SetStartNotification(true);
+            currentAssessment.SetStartDate(startDateObj);
+            updateListener.onAssessmentUpdated(itemId, currentAssessment);
+        }
+    }
+    public void scheduleEndNotification() {
+        Dialog dialog = getDialog();
+        EditText endDate = dialog.findViewById(R.id.editAssessmentEndDate);
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+        Date endDateObj = null;
+        try {
+            endDateObj = formatter.parse(endDate.getText().toString());
+            endDate.setError(null);
+        } catch (ParseException e) {
+            //Validation Error
+            endDate.setError("Required");
+            return;
+        }
+        // if isEditMode and end date is before today, and end notification is set, cancel the notification
+        if (currentAssessment.GetEndNotification() ) {
+            cancelNotification(currentAssessment.GetNotificationId() + 1);
+            // Set button text to "Schedule End Notification"
+            Button scheduleEndNotificationButton = dialog.findViewById(R.id.endNotificationButton);
+            scheduleEndNotificationButton.setText("Schedule End Notification");
+            currentAssessment.SetEndNotification(false);
+        }
+        else if (endDateObj != null) {
+            scheduleInexactAlarm(endDateObj, "Assessment " + currentAssessment.GetTitle() + " is ending today!", currentAssessment.GetNotificationId() + 1);
+            int itemId = getArguments() != null ? getArguments().getInt("itemId", 0) : 0;
+            // Set button text to "Cancel End Notification"
+            Button scheduleEndNotificationButton = dialog.findViewById(R.id.endNotificationButton);
+            scheduleEndNotificationButton.setText("Cancel End Notification");
+            currentAssessment.SetEndNotification(true);
+            currentAssessment.SetEndDate(endDateObj);
+            updateListener.onAssessmentUpdated(itemId, currentAssessment);
+        }
+    }
     private void scheduleInexactAlarm(Date date, String message, int notificationId) {
         Context context = getContext();
         if (context != null) {
@@ -164,27 +236,39 @@ public class AssessmentAddEditFragment extends DialogFragment {
             intent.putExtra("message", message);
             intent.putExtra("notificationId", notificationId);
 
-            // Specify FLAG_IMMUTABLE for PendingIntent
-            int flags = PendingIntent.FLAG_UPDATE_CURRENT;
-            flags |= PendingIntent.FLAG_IMMUTABLE;
+            int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, notificationId, intent, flags);
 
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                    context, notificationId, intent, flags);
+            // Set the alarm to go off at approximately 8 AM
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.set(Calendar.HOUR_OF_DAY, 8);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
 
-            long triggerAtMillis = date.getTime();
-            long intervalMillis = AlarmManager.INTERVAL_DAY; // Repeat every day
-
-            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAtMillis, intervalMillis, pendingIntent);
+            long triggerAtMillis = calendar.getTimeInMillis();
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
         }
     }
+
 
     private void cancelNotification(int notificationId) {
         Context context = getContext();
         if (context != null) {
-            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.cancel(notificationId);
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(context, AlarmReceiver.class);
+
+            // Use the same flags as when you created the PendingIntent
+            int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, notificationId, intent, flags);
+
+            if (alarmManager != null) {
+                alarmManager.cancel(pendingIntent);
+            }
         }
     }
+
 
     private void showStartDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
@@ -279,6 +363,26 @@ public class AssessmentAddEditFragment extends DialogFragment {
                 startDate.setText(formatter.format(currentAssessment.GetStartDate()));
                 EditText endDate = dialog.findViewById(R.id.editAssessmentEndDate);
                 endDate.setText(formatter.format(currentAssessment.GetEndDate()));
+                // Set button text to "Cancel Start Notification" if start notification is set
+                Button scheduleStartNotificationButton = dialog.findViewById(R.id.startNotificationButton);
+                if (currentAssessment.GetStartNotification()) {
+                    scheduleStartNotificationButton.setText("Cancel Start Notification");
+                } else {
+                    scheduleStartNotificationButton.setText("Schedule Start Notification");
+                }
+                // Set button text to "Cancel End Notification" if end notification is set
+                Button scheduleEndNotificationButton = dialog.findViewById(R.id.endNotificationButton);
+                if (currentAssessment.GetEndNotification()) {
+                    scheduleEndNotificationButton.setText("Cancel End Notification");
+                } else {
+                    scheduleEndNotificationButton.setText("Schedule End Notification");
+                }
+            } else {
+                // hide schedule notification buttons
+                Button scheduleStartNotificationButton = dialog.findViewById(R.id.startNotificationButton);
+                scheduleStartNotificationButton.setVisibility(View.GONE);
+                Button scheduleEndNotificationButton = dialog.findViewById(R.id.endNotificationButton);
+                scheduleEndNotificationButton.setVisibility(View.GONE);
             }
         }
     }

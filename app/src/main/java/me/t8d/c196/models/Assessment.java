@@ -12,6 +12,10 @@ public class Assessment implements Serializable {
         return this.startDate;
     }
 
+    public void SetStartDate(Date startDateObj) {
+        this.startDate = startDateObj;
+    }
+
     public enum Type {
         Performance,
         Objective
@@ -22,6 +26,20 @@ public class Assessment implements Serializable {
     }
     public void SetNotificationId(int notificationId) {
         this.notificationId = notificationId;
+    }
+    private boolean endNotification = false;
+    public boolean GetEndNotification() {
+        return this.endNotification;
+    }
+    public void SetEndNotification(boolean endNotification) {
+        this.endNotification = endNotification;
+    }
+    private boolean startNotification = false;
+    public boolean GetStartNotification() {
+        return this.startNotification;
+    }
+    public void SetStartNotification(boolean startNotification) {
+        this.startNotification = startNotification;
     }
     private Type type;
     private String title;

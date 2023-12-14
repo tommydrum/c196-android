@@ -29,6 +29,7 @@ import android.widget.TextView;
 
 import androidx.fragment.app.DialogFragment;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -89,6 +90,10 @@ public class CourseAddEditFragment extends DialogFragment {
             intent.putExtra(Intent.EXTRA_TEXT, editTextCourseNote.getText());
             startActivity(Intent.createChooser(intent, "Share Notes"));
         });
+        Button scheduleStartNotificationButton = view.findViewById(R.id.startCourseNotificationButton);
+        scheduleStartNotificationButton.setOnClickListener(v -> scheduleStartNotification());
+        Button scheduleEndNotificationButton = view.findViewById(R.id.endCourseNotificationButton);
+        scheduleEndNotificationButton.setOnClickListener(v -> scheduleEndNotification());
 
         builder.setView(view);
         return builder.create();
@@ -192,20 +197,22 @@ public class CourseAddEditFragment extends DialogFragment {
             }
             // Save the new course
             if (isEditMode) {
-                updateListener.onCourseUpdated(itemId, newCourse);
                 //Reset notification
                 cancelNotification(currentCourse.GetNotificationId());
                 cancelNotification(currentCourse.GetNotificationId() + 1);
+                //Only set if the date is after today
+                if (currentCourse.GetStartNotification()) {
+                    scheduleInexactAlarm(newCourse.GetStartDate(), "Course " + newCourse.GetTitle() + " starts today!", newCourse.GetNotificationId());
+                    newCourse.SetStartNotification(true);
+                }
+                //end date notification
+                if (currentCourse.GetEndNotification()) {
+                    scheduleInexactAlarm(newCourse.GetEndDate(), "Course " + newCourse.GetTitle() + " ends today!", newCourse.GetNotificationId() + 1);
+                    newCourse.SetEndNotification(true);
+                }
+                updateListener.onCourseUpdated(itemId, newCourse);
             } else {
                 updateListener.onCourseUpdated(-1, newCourse);
-            }
-            //Only set if the date is after today
-            if (newCourse.GetStartDate().after(new Date())) {
-                scheduleInexactAlarm(newCourse.GetStartDate(), "Course " + newCourse.GetTitle() + " starts today!", newCourse.GetNotificationId());
-            }
-            //end date notification
-            if (newCourse.GetEndDate().after(new Date())) {
-                scheduleInexactAlarm(newCourse.GetEndDate(), "Course " + newCourse.GetTitle() + " ends today!", newCourse.GetNotificationId() + 1);
             }
         }
         dismiss();
@@ -233,25 +240,99 @@ public class CourseAddEditFragment extends DialogFragment {
             intent.putExtra("message", message);
             intent.putExtra("notificationId", notificationId);
 
-            // Specify FLAG_IMMUTABLE for PendingIntent
-            int flags = PendingIntent.FLAG_UPDATE_CURRENT;
-            flags |= PendingIntent.FLAG_IMMUTABLE;
+            int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, notificationId, intent, flags);
 
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                    context, notificationId, intent, flags);
+            // Set the alarm to go off at approximately 8 AM
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.set(Calendar.HOUR_OF_DAY, 8);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
 
-            long triggerAtMillis = date.getTime();
-            long intervalMillis = AlarmManager.INTERVAL_DAY; // Repeat every day
-
-            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAtMillis, intervalMillis, pendingIntent);
+            long triggerAtMillis = calendar.getTimeInMillis();
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
         }
     }
-
     private void cancelNotification(int notificationId) {
         Context context = getContext();
         if (context != null) {
-            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.cancel(notificationId);
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(context, AlarmReceiver.class);
+
+            // Use the same flags as when you created the PendingIntent
+            int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, notificationId, intent, flags);
+
+            if (alarmManager != null) {
+                alarmManager.cancel(pendingIntent);
+            }
+        }
+    }
+    public void scheduleStartNotification() {
+        Dialog dialog = getDialog();
+        EditText startDate = dialog.findViewById(R.id.editCourseDate);
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+        Date startDateObj = null;
+        try {
+            startDateObj = formatter.parse(startDate.getText().toString());
+            startDate.setError(null);
+        } catch (ParseException e) {
+            //Validation Error
+            startDate.setError("Required");
+            return;
+        }
+        // if isEditMode and start date is before today, and start notification is set, cancel the notification
+        if (currentCourse.GetStartNotification() ) {
+            cancelNotification(currentCourse.GetNotificationId());
+            // Set button text to "Schedule Start Notification"
+            Button scheduleStartNotificationButton = dialog.findViewById(R.id.startCourseNotificationButton);
+            scheduleStartNotificationButton.setText("Schedule Start Notification");
+            currentCourse.SetStartNotification(false);
+        }
+        else if (startDateObj != null) {
+            scheduleInexactAlarm(startDateObj, "Course " + currentCourse.GetTitle() + " is starting today!", currentCourse.GetNotificationId());
+            int itemId = getArguments() != null ? getArguments().getInt("itemId", 0) : 0;
+            // Set button text to "Cancel Start Notification"
+            Button scheduleStartNotificationButton = dialog.findViewById(R.id.startCourseNotificationButton);
+            scheduleStartNotificationButton.setText("Cancel Start Notification");
+            currentCourse.SetStartNotification(true);
+            currentCourse.SetEndDate(startDateObj);
+            updateListener.onCourseUpdated(itemId, currentCourse);
+        }
+    }
+
+    public void scheduleEndNotification() {
+        Dialog dialog = getDialog();
+        EditText endDate = dialog.findViewById(R.id.editCourseEndDate);
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+        Date endDateObj = null;
+        try {
+            endDateObj = formatter.parse(endDate.getText().toString());
+            endDate.setError(null);
+        } catch (ParseException e) {
+            //Validation Error
+            endDate.setError("Required");
+            return;
+        }
+        // if isEditMode and end date is before today, and end notification is set, cancel the notification
+        if (currentCourse.GetEndNotification() ) {
+            cancelNotification(currentCourse.GetNotificationId() + 1);
+            // Set button text to "Schedule End Notification"
+            Button scheduleEndNotificationButton = dialog.findViewById(R.id.endCourseNotificationButton);
+            scheduleEndNotificationButton.setText("Schedule End Notification");
+            currentCourse.SetEndNotification(false);
+        }
+        else if (endDateObj != null) {
+            scheduleInexactAlarm(endDateObj, "Course " + currentCourse.GetTitle() + " is ending today!", currentCourse.GetNotificationId() + 1);
+            int itemId = getArguments() != null ? getArguments().getInt("itemId", 0) : 0;
+            // Set button text to "Cancel End Notification"
+            Button scheduleEndNotificationButton = dialog.findViewById(R.id.endCourseNotificationButton);
+            scheduleEndNotificationButton.setText("Cancel End Notification");
+            currentCourse.SetEndNotification(true);
+            currentCourse.SetEndDate(endDateObj);
+            updateListener.onCourseUpdated(itemId, currentCourse);
         }
     }
 
@@ -393,11 +474,29 @@ public class CourseAddEditFragment extends DialogFragment {
                 startDate.setText(dateFormat.format(currentCourse.GetStartDate().getTime()));
                 EditText endDate = dialog.findViewById(R.id.editCourseEndDate);
                 endDate.setText(dateFormat.format(currentCourse.GetEndDate().getTime()));
+                // set notification buttons to correct text
+                Button scheduleStartNotificationButton = dialog.findViewById(R.id.startCourseNotificationButton);
+                if (currentCourse.GetStartNotification()) {
+                    scheduleStartNotificationButton.setText("Cancel Start Notification");
+                } else {
+                    scheduleStartNotificationButton.setText("Schedule Start Notification");
+                }
+                Button scheduleEndNotificationButton = dialog.findViewById(R.id.endCourseNotificationButton);
+                if (currentCourse.GetEndNotification()) {
+                    scheduleEndNotificationButton.setText("Cancel End Notification");
+                } else {
+                    scheduleEndNotificationButton.setText("Schedule End Notification");
+                }
 
             } else {
                 // Hide the share button
                 Button shareButton = dialog.findViewById(R.id.shareNotesButton);
                 shareButton.setVisibility(View.GONE);
+                // Hide the notification buttons
+                Button scheduleStartNotificationButton = dialog.findViewById(R.id.startCourseNotificationButton);
+                scheduleStartNotificationButton.setVisibility(View.GONE);
+                Button scheduleEndNotificationButton = dialog.findViewById(R.id.endCourseNotificationButton);
+                scheduleEndNotificationButton.setVisibility(View.GONE);
             }
         }
     }

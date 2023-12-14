@@ -22,6 +22,20 @@ public class Course implements Serializable {
     public void SetNotificationId(int notificationId) {
         this.notificationId = notificationId;
     }
+    private boolean startNotification = false;
+    public boolean GetStartNotification() {
+        return this.startNotification;
+    }
+    public void SetStartNotification(boolean startNotification) {
+        this.startNotification = startNotification;
+    }
+    private boolean endNotification = false;
+    public boolean GetEndNotification() {
+        return this.endNotification;
+    }
+    public void SetEndNotification(boolean endNotification) {
+        this.endNotification = endNotification;
+    }
 
     public void SetNotes(String courseNote) {
         this.notes = courseNote;

@@ -92,6 +92,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/assessmentStartDateText"
             android:autofillHints="" />
+        <Button
+            android:id="@+id/startNotificationButton"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:text="Enable Notification"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/editAssessmentStartDate"/>
 
         <TextView
             android:id="@+id/assessmentEndDateText"
@@ -100,7 +111,7 @@
             android:layout_marginTop="16dp"
             android:text="Assessment End Date"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editAssessmentStartDate" />
+            app:layout_constraintTop_toBottomOf="@+id/startNotificationButton" />
 
         <EditText
             android:id="@+id/editAssessmentEndDate"
@@ -115,6 +126,17 @@
             app:layout_constraintTop_toBottomOf="@+id/assessmentEndDateText"
             android:autofillHints="" />
 
+        <Button
+            android:id="@+id/endNotificationButton"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:text="Enable Notification"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/editAssessmentEndDate"/>
 
         <LinearLayout
             android:id="@+id/assessmentButtonRow"
@@ -123,7 +145,7 @@
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editAssessmentEndDate">
+            app:layout_constraintTop_toBottomOf="@+id/endNotificationButton">
 
             <Button
                 android:id="@+id/cancelAssessmentButton"
